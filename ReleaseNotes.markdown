@@ -1,6 +1,11 @@
 #Release Notes:
 
+##MP SiK 2.7:
+* Fixed MAVLink radio messages injection
+* Adapted radio messages for multi point usage
+* Removed old RADIO messages. Newer RADIO_STATUS messages only
 
+----
 ##MP SiK 2.5:
 
 ###Alterations

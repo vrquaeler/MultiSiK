@@ -40,8 +40,10 @@
 extern __xdata uint8_t pbuf[MAX_PACKET_LENGTH];
 static __pdata uint8_t seqnum;
 
+/*
 #define MAVLINK_MSG_ID_RADIO 166
 #define MAVLINK_RADIO_CRC_EXTRA 21
+*/
 
 // new RADIO_STATUS common message
 #define MAVLINK_MSG_ID_RADIO_STATUS 109
@@ -109,25 +111,24 @@ void MAVLink_report(void)
 	pbuf[2] = seqnum++;
 	pbuf[3] = RADIO_SOURCE_SYSTEM;
 	pbuf[4] = RADIO_SOURCE_COMPONENT;
-	pbuf[5] = MAVLINK_MSG_ID_RADIO;
 
 	m->rxerrors	= errors.rx_errors;
 	m->fixed	= errors.corrected_packets;
 	m->txbuf	= serial_read_space();
-//	m->rssi		= statistics.average_rssi;
-//	m->remrssi	= remote_statistics.average_rssi;
-//	m->noise	= statistics.average_noise;
-//	m->remnoise	= remote_statistics.average_noise;
-	mavlink_crc(MAVLINK_RADIO_CRC_EXTRA);
-
-	if (serial_write_space() < sizeof(struct mavlink_RADIO_v10)+8) {
-		// don't cause an overflow
-		return;
+	if(nodeId == 0) {
+		m->rssi     = statistics[1].average_rssi;
+		m->remrssi  = remote_statistics[1].average_rssi;
+        m->noise    = statistics[1].average_noise;
+		m->remnoise = remote_statistics[1].average_noise;
+	}
+	else {
+		m->rssi     = statistics[nodeId].average_rssi;
+		m->remrssi  = remote_statistics[0].average_rssi;
+        m->noise    = statistics[nodeId].average_noise;
+		m->remnoise = remote_statistics[0].average_noise;
 	}
 
-	serial_write_buf(pbuf, sizeof(struct mavlink_RADIO_v10)+8);
-
-	// now the new RADIO_STATUS common message
+	// the new RADIO_STATUS common message
 	pbuf[5] = MAVLINK_MSG_ID_RADIO_STATUS;
 	mavlink_crc(MAVLINK_RADIO_STATUS_CRC_EXTRA);
 
